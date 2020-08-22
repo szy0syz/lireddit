@@ -27,7 +27,7 @@ services:
     image: postgres:12
     restart: always
     environment:
-      POSTGRES_PASSWORD: szy444?
+      POSTGRES_PASSWORD: 123456
     volumes:
       - /Users/szy0syz/workspace/postgresSQL:/var/lib/postgresql/data
     ports:
