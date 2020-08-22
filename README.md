@@ -17,3 +17,25 @@
 ```
 
 - `yarn add @mikro-orm/cli @mikro-orm/core @mikro-orm/migrations @mikro-orm/postgresql pg`
+
+```yml
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: szy444?
+    volumes:
+      - /Users/szy0syz/workspace/postgresSQL:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - 8190:8080
+```
