@@ -39,3 +39,5 @@ services:
     ports:
       - 8190:8080
 ```
+
+- `npx mikro-orm migration:create`
