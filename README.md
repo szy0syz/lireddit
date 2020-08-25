@@ -41,3 +41,5 @@ services:
 ```
 
 - `npx mikro-orm migration:create`
+- `yarn add express apollo-server-express graphql type-graphql`
+- `yarn add -D @types/express`
