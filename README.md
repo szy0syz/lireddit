@@ -46,3 +46,4 @@ services:
 - `yarn add argon2`
 - `yarn add redis connect-redis express-session`
 - `yarn add -D @types/redis @types/express-session @types/connect-redis`
+- `yarn create next-app --example with-chakra-ui web`
