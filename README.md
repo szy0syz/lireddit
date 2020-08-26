@@ -27,7 +27,7 @@ services:
     image: postgres:12
     restart: always
     environment:
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: pass123
     volumes:
       - /Users/szy0syz/workspace/postgresSQL:/var/lib/postgresql/data
     ports:
@@ -44,3 +44,5 @@ services:
 - `yarn add express apollo-server-express graphql type-graphql`
 - `yarn add -D @types/express`
 - `yarn add argon2`
+- `yarn add redis connect-redis express-session`
+- `yarn add -D @types/redis @types/express-session @types/connect-redis`
