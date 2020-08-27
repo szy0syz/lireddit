@@ -47,3 +47,5 @@ services:
 - `yarn add redis connect-redis express-session`
 - `yarn add -D @types/redis @types/express-session @types/connect-redis`
 - `yarn create next-app --example with-chakra-ui web`
+- `https://graphql-code-generator.com/`
+- `yarn add -D @graphql-codegen/cli`
