@@ -24,7 +24,7 @@ class UsernamePasswordInput {
 @ObjectType()
 class FieldError {
   @Field()
-  filed: string;
+  field: string;
 
   @Field()
   message: string;
@@ -61,7 +61,7 @@ export class UserResolver {
     if (options.username.length <= 2) {
       return {
         errors: [
-          { filed: 'username', message: 'length must be greater than 2' },
+          { field: 'username', message: 'length must be greater than 2' },
         ],
       };
     }
@@ -69,7 +69,7 @@ export class UserResolver {
     if (options.password.length <= 3) {
       return {
         errors: [
-          { filed: 'password', message: 'length must be greater than 3' },
+          { field: 'password', message: 'length must be greater than 3' },
         ],
       };
     }
@@ -87,7 +87,7 @@ export class UserResolver {
       // || err.detail.includes("already exists")
       if (err.code === '23505') {
         return {
-          errors: [{ filed: 'username', message: 'username already taken' }],
+          errors: [{ field: 'username', message: 'username already taken' }],
         };
       }
     }
@@ -106,13 +106,13 @@ export class UserResolver {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
       return {
-        errors: [{ filed: 'username', message: "that username doesn't esist" }],
+        errors: [{ field: 'username', message: "that username doesn't esist" }],
       };
     }
     const valid = await argon2.verify(user.password, options.password);
     if (!valid) {
       return {
-        errors: [{ filed: 'password', message: 'incorrect password' }],
+        errors: [{ field: 'password', message: 'incorrect password' }],
       };
     }
 

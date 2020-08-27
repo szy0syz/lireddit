@@ -47,7 +47,7 @@ let FieldError = class FieldError {
 __decorate([
     type_graphql_2.Field(),
     __metadata("design:type", String)
-], FieldError.prototype, "filed", void 0);
+], FieldError.prototype, "field", void 0);
 __decorate([
     type_graphql_2.Field(),
     __metadata("design:type", String)
@@ -82,14 +82,14 @@ let UserResolver = class UserResolver {
             if (options.username.length <= 2) {
                 return {
                     errors: [
-                        { filed: 'username', message: 'length must be greater than 2' },
+                        { field: 'username', message: 'length must be greater than 2' },
                     ],
                 };
             }
             if (options.password.length <= 3) {
                 return {
                     errors: [
-                        { filed: 'password', message: 'length must be greater than 3' },
+                        { field: 'password', message: 'length must be greater than 3' },
                     ],
                 };
             }
@@ -104,7 +104,7 @@ let UserResolver = class UserResolver {
             catch (err) {
                 if (err.code === '23505') {
                     return {
-                        errors: [{ filed: 'username', message: 'username already taken' }],
+                        errors: [{ field: 'username', message: 'username already taken' }],
                     };
                 }
             }
@@ -117,13 +117,13 @@ let UserResolver = class UserResolver {
             const user = yield em.findOne(User_1.User, { username: options.username });
             if (!user) {
                 return {
-                    errors: [{ filed: 'username', message: "that username doesn't esist" }],
+                    errors: [{ field: 'username', message: "that username doesn't esist" }],
                 };
             }
             const valid = yield argon2_1.default.verify(user.password, options.password);
             if (!valid) {
                 return {
-                    errors: [{ filed: 'password', message: 'incorrect password' }],
+                    errors: [{ field: 'password', message: 'incorrect password' }],
                 };
             }
             req.session.userId = user.id;

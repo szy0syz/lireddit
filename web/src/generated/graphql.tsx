@@ -84,7 +84,7 @@ export type UserReponse = {
 
 export type FieldError = {
   __typename?: 'FieldError';
-  filed: Scalars['String'];
+  field: Scalars['String'];
   message: Scalars['String'];
 };
 
@@ -108,7 +108,7 @@ export type RegisterMutation = (
       & Pick<User, 'id' | 'username'>
     )>, errors?: Maybe<Array<(
       { __typename?: 'FieldError' }
-      & Pick<FieldError, 'filed' | 'message'>
+      & Pick<FieldError, 'field' | 'message'>
     )>> }
   ) }
 );
@@ -122,7 +122,7 @@ export const RegisterDocument = gql`
       username
     }
     errors {
-      filed
+      field
       message
     }
   }
