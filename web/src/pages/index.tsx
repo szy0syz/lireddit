@@ -1,3 +1,7 @@
-const Index = () => <div>Chakra</div>;
+import { NavBar } from "../components/NavBar";
+
+const Index = () => <>
+   <NavBar/>
+</>;
 
 export default Index;

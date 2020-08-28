@@ -49,3 +49,23 @@ services:
 - `yarn create next-app --example with-chakra-ui web`
 - `https://graphql-code-generator.com/`
 - `yarn add -D @graphql-codegen/cli`
+
+- 关于 typsscript 类型推断优化
+
+```ts
+//* 遇到typescr解析不理想的情况下：包个函数，好好解析这些参数，全写在形参里太难看了
+function betterUpdateQuery<Result, Query>(
+  cache: Cache,
+  qi: QueryInput,
+  result: any,
+  fn: (r: Result, q: Query) => Query
+) {
+  return cache.updateQuery(qi, (data) => fn(result, data as any) as any);
+}
+```
+
+- 在 GraphQL 里，重复的类型用 fragments 统一声明一下
+
+```ts
+
+```

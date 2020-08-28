@@ -1,16 +1,9 @@
-import { Query } from 'type-graphql';
-import { MyContext } from './../types';
-import { User } from './../entities/User';
-import {
-  Resolver,
-  Mutation,
-  InputType,
-  Field,
-  Arg,
-  Ctx,
-  ObjectType,
-} from 'type-graphql';
-import argon2 from 'argon2';
+import { COOKIE_NAME } from "./../constants";
+import { Query } from "type-graphql";
+import { MyContext } from "./../types";
+import { User } from "./../entities/User";
+import { Resolver, Mutation, InputType, Field, Arg, Ctx, ObjectType } from "type-graphql";
+import argon2 from "argon2";
 
 @InputType()
 class UsernamePasswordInput {
@@ -41,10 +34,8 @@ class UserReponse {
 
 @Resolver()
 export class UserResolver {
-  @Query(() => User, {nullable: true})
-  async me(
-    @Ctx() {req, em}: MyContext
-  ) {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req, em }: MyContext) {
     // not logged in
     if (!req.session.userId) return null;
 
@@ -55,22 +46,18 @@ export class UserResolver {
 
   @Mutation(() => UserReponse)
   async register(
-    @Arg('options') options: UsernamePasswordInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserReponse> {
     if (options.username.length <= 2) {
       return {
-        errors: [
-          { field: 'username', message: 'length must be greater than 2' },
-        ],
+        errors: [{ field: "username", message: "length must be greater than 2" }],
       };
     }
 
     if (options.password.length <= 3) {
       return {
-        errors: [
-          { field: 'password', message: 'length must be greater than 3' },
-        ],
+        errors: [{ field: "password", message: "length must be greater than 3" }],
       };
     }
 
@@ -85,9 +72,9 @@ export class UserResolver {
     } catch (err) {
       // duplication username error
       // || err.detail.includes("already exists")
-      if (err.code === '23505') {
+      if (err.code === "23505") {
         return {
-          errors: [{ field: 'username', message: 'username already taken' }],
+          errors: [{ field: "username", message: "username already taken" }],
         };
       }
     }
@@ -100,24 +87,40 @@ export class UserResolver {
 
   @Mutation(() => UserReponse)
   async login(
-    @Arg('options') options: UsernamePasswordInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserReponse> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
       return {
-        errors: [{ field: 'username', message: "that username doesn't esist" }],
+        errors: [{ field: "username", message: "that username doesn't esist" }],
       };
     }
     const valid = await argon2.verify(user.password, options.password);
     if (!valid) {
       return {
-        errors: [{ field: 'password', message: 'incorrect password' }],
+        errors: [{ field: "password", message: "incorrect password" }],
       };
     }
 
     req.session!.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+        if (err) {
+          console.log(err);
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }

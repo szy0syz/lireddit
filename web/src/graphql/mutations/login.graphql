@@ -1,0 +1,13 @@
+# import "../fragments/.."
+
+mutation login($options: UsernamePasswordInput!){
+  login(options: $options) {
+    user {
+      ...RegularUser
+    }
+    errors {
+      field
+      message
+    }
+  }
+}

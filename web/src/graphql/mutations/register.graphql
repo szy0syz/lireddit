@@ -1,8 +1,9 @@
+# import "../fragments/.."
+
 mutation Register($username: String!, $password: String!){
   register(options: {username: $username, password: $password}) {
     user {
-      id
-      username
+      ...RegularUser
     }
     errors {
       field
