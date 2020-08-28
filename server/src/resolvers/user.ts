@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from './../constants';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from './../constants';
 import { Query } from 'type-graphql';
 import { MyContext } from './../types';
 import { User } from './../entities/User';
@@ -6,6 +6,8 @@ import { Resolver, Mutation, Field, Arg, Ctx, ObjectType } from 'type-graphql';
 import argon2 from 'argon2';
 import { UsernamePasswordInput } from './UsernamePasswordInput';
 import { validateRegister } from '../utils/validateRegister';
+import { sendEmail } from '../utils/snedEmail';
+import { v4 } from 'uuid';
 
 @ObjectType()
 class FieldError {
@@ -17,7 +19,7 @@ class FieldError {
 }
 
 @ObjectType()
-class UserReponse {
+class UserResponse {
   @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
 
@@ -27,9 +29,66 @@ class UserReponse {
 
 @Resolver()
 export class UserResolver {
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg('token') token: string,
+    @Arg('newPassword') newPassword: string,
+    @Ctx() { em, redis, req }: MyContext
+  ): Promise<UserResponse> {
+    if (newPassword.length <= 3) {
+      return {
+        errors: [
+          { field: 'newPassword', message: 'length must be greater than 3' },
+        ],
+      };
+    }
+
+    const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+    if (!userId) {
+      return {
+        errors: [{ field: 'token', message: 'token expired' }],
+      };
+    }
+
+    const user = await em.findOne(User, { id: parseInt(userId) });
+    if (!user) {
+      return {
+        errors: [{ field: 'token', message: 'user no longer exists' }],
+      };
+    }
+    const hashedPassword = await argon2.hash(newPassword);
+    user.password = hashedPassword;
+
+    await em.persistAndFlush(user);
+
+    // log in user after change password
+    req.session.userId = user.id;
+
+    return { user };
+  }
+
   @Mutation(() => Boolean)
-  async forgotPassword(@Arg('email') email: string, @Ctx() { em }: MyContext) {
+  async forgotPassword(
+    @Arg('email') email: string,
+    @Ctx() { em, redis }: MyContext
+  ) {
     const user = await em.findOne(User, { email });
+    if (!user) return true; // the email is not in the db
+
+    const token = v4();
+
+    await redis.set(
+      FORGOT_PASSWORD_PREFIX + token,
+      user.id,
+      'ex',
+      1000 * 60 * 60 * 24
+    );
+
+    sendEmail(
+      email,
+      `<a href="http://localhost:3000/change-password/${token}">reset password</a>`
+    );
+
     return true;
   }
 
@@ -43,11 +102,11 @@ export class UserResolver {
     return user;
   }
 
-  @Mutation(() => UserReponse)
+  @Mutation(() => UserResponse)
   async register(
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
-  ): Promise<UserReponse> {
+  ): Promise<UserResponse> {
     const errors = validateRegister(options);
 
     if (errors) return { errors };
@@ -77,19 +136,23 @@ export class UserResolver {
     return { user };
   }
 
-  @Mutation(() => UserReponse)
+  @Mutation(() => UserResponse)
   async login(
     @Arg('usernameOrEmail') usernameOrEmail: string,
     @Arg('password') password: string,
     @Ctx() { em, req }: MyContext
-  ): Promise<UserReponse> {
-    if (!usernameOrEmail) return {
-      errors: [{ field: 'usernameOrEmail', message: "username or email is empty" }],
-    }
+  ): Promise<UserResponse> {
+    if (!usernameOrEmail)
+      return {
+        errors: [
+          { field: 'usernameOrEmail', message: 'username or email is empty' },
+        ],
+      };
 
-    if (!password) return {
-      errors: [{ field: 'password', message: "password is empty" }],
-    }
+    if (!password)
+      return {
+        errors: [{ field: 'password', message: 'password is empty' }],
+      };
 
     const user = await em.findOne(
       User,
@@ -99,7 +162,9 @@ export class UserResolver {
     );
     if (!user) {
       return {
-        errors: [{ field: 'usernameOrEmail', message: "that username doesn't esist" }],
+        errors: [
+          { field: 'usernameOrEmail', message: "that username doesn't esist" },
+        ],
       };
     }
     const valid = await argon2.verify(user.password, password);
