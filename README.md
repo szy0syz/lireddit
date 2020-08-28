@@ -67,5 +67,17 @@ function betterUpdateQuery<Result, Query>(
 - 在 GraphQL 里，重复的类型用 fragments 统一声明一下
 
 ```ts
+fragment RegularUser on User {
+  id
+  username
+}
+```
 
+- 分清业务到底适合在哪个端运行
+
+```ts
+const [{ data, fetching }] = useMeQuery({
+    pause: isServer(), // 组织服务端渲染阶段执行，因为服务端拿不到客户端 cookie，没必要执行两次
+  }); // 待到客服端环境在运行即可
+let body = null;
 ```
