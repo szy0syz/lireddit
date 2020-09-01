@@ -1,10 +1,10 @@
 import "reflect-metadata";
+import { Post } from './entities/Post';
+import { User } from './entities/User';
 import express from "express";
 import { UserResolver } from "./resolvers/user";
 import { PostResolver } from "./resolvers/post";
-import { MikroORM } from "@mikro-orm/core";
 import { __prod__, COOKIE_NAME } from "./constants";
-import microConfig from "./mikro-orm.config";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
@@ -22,12 +22,10 @@ const main = async () => {
     password: 'pass123',
     logging: true,
     synchronize: true,
-    entities: []
+    entities: [User, Post]
   });
 
-  const orm = await MikroORM.init(microConfig);
-  // await orm.em.nativeDelete(User, {});
-  await orm.getMigrator().up();
+
 
   const app = express();
 
@@ -64,7 +62,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ em: orm.em, req, res, redis }),
+    context: ({ req, res }) => ({ req, res, redis }),
   });
 
   apolloServer.applyMiddleware({
