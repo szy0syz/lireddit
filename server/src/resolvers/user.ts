@@ -83,7 +83,7 @@ export class UserResolver {
       'ex',
       1000 * 60 * 60 * 24
     );
-
+    console.log(`http://localhost:3000/change-password/${token}`);
     sendEmail(
       email,
       `<a href="http://localhost:3000/change-password/${token}">reset password</a>`

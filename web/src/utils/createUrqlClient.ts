@@ -19,7 +19,8 @@ export const createUrqlClient = (ssrExchange: any) => ({
     cacheExchange({
       updates: {
         Mutation: {
-          logout: (_result, args, cache, info) => {
+          // logout: (_result, args, cache, info) => {
+          logout: (_result, _, cache, __) => {
             betterUpdateQuery<LogoutMutation, MeQuery>(
               cache,
               { query: MeDocument },
@@ -27,7 +28,8 @@ export const createUrqlClient = (ssrExchange: any) => ({
               () => ({ me: null })
             );
           },
-          login: (_result, args, cache, info) => {
+          // login: (_result, args, cache, info) => {
+          login: (_result, _, cache, __) => {
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
               { query: MeDocument },
@@ -41,7 +43,7 @@ export const createUrqlClient = (ssrExchange: any) => ({
               }
             );
           },
-          register: (_result, args, cache, info) => {
+          register: (_result, _, cache, __) => {
             betterUpdateQuery<RegisterMutation, MeQuery>(
               cache,
               { query: MeDocument },
@@ -57,9 +59,9 @@ export const createUrqlClient = (ssrExchange: any) => ({
           },
         },
         Subscription: {
-          newTodo: (result, args, cache, info) => {
-            // ...
-          },
+          // newTodo: (result, args, cache, info) => {
+          //   // ...
+          // },
         },
       },
     }),
