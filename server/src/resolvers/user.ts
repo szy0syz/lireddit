@@ -42,8 +42,8 @@ export class UserResolver {
         ],
       };
     }
-
-    const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+    const key = FORGOT_PASSWORD_PREFIX;
+    const userId = await redis.get(key + token);
     if (!userId) {
       return {
         errors: [{ field: 'token', message: 'token expired' }],
@@ -60,6 +60,9 @@ export class UserResolver {
     user.password = hashedPassword;
 
     await em.persistAndFlush(user);
+
+    // remove this token, avoid reuse
+    await redis.del(key + token);
 
     // log in user after change password
     req.session.userId = user.id;

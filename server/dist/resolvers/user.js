@@ -70,7 +70,8 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
-            const userId = yield redis.get(constants_1.FORGOT_PASSWORD_PREFIX + token);
+            const key = constants_1.FORGOT_PASSWORD_PREFIX;
+            const userId = yield redis.get(key + token);
             if (!userId) {
                 return {
                     errors: [{ field: 'token', message: 'token expired' }],
@@ -85,6 +86,7 @@ let UserResolver = class UserResolver {
             const hashedPassword = yield argon2_1.default.hash(newPassword);
             user.password = hashedPassword;
             yield em.persistAndFlush(user);
+            yield redis.del(key + token);
             req.session.userId = user.id;
             return { user };
         });
