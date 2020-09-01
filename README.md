@@ -81,3 +81,5 @@ const [{ data, fetching }] = useMeQuery({
   }); // 待到客服端环境在运行即可
 let body = null;
 ```
+
+- 竟然可以重启 typescript 服务 --> `shift + cmd + p` --> `restart typescript`
