@@ -15,6 +15,7 @@ import cors from "cors";
 import { createConnection } from "typeorm";
 
 const main = async () => {
+  // eslint-disable-next-line
   const conn = await createConnection({
     type: 'postgres',
     database: 'lireddit2',
