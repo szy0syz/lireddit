@@ -1,4 +1,5 @@
-import { ObjectType, Field, Int } from "type-graphql";
+import { User } from './User';
+import { ObjectType, Field, Int } from 'type-graphql';
 import {
   Entity,
   Column,
@@ -6,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   BaseEntity,
-} from "typeorm";
+  ManyToOne,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -15,16 +17,30 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field(() => String)
-  @CreateDateColumn()
-  createdAt = Date;
-
-  @Field(() => String)
-  @UpdateDateColumn()
-  updatedAt = Date;
-
-  // @Field()  如果这里不注入 Field 则 GraphQL 拿不到该字段
   @Field()
   @Column()
   title!: string;
+
+  @Field()
+  @Column()
+  text!: string;
+
+  @Field()
+  @Column({ type: 'int', default: 0 })
+  points!: number;
+
+  @Field()
+  @Column()
+  creatorId: number;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  creator: User;
+
+  @Field(() => String)
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Field(() => String)
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
