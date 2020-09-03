@@ -1,5 +1,6 @@
-import { isAuth } from "./../middleware/isAuth";
-import { Post } from "./../entities/Post";
+import { isAuth } from './../middleware/isAuth';
+import { Post } from './../entities/Post';
+import { getConnection } from 'typeorm';
 import {
   Resolver,
   Query,
@@ -10,8 +11,8 @@ import {
   Field,
   Ctx,
   UseMiddleware,
-} from "type-graphql";
-import { MyContext } from "src/types";
+} from 'type-graphql';
+import { MyContext } from 'src/types';
 
 @InputType()
 class PostInput {
@@ -25,18 +26,37 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  posts(): Promise<Post[]> {
-    return Post.find();
+  posts(
+    @Arg('limit', () => Int) limit: number,
+    @Arg('cursor', () => String, { nullable: true }) cursor: string | null
+  ): Promise<Post[]> {
+    const realLimit = Math.min(50, limit || 10);
+    const qb = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder('p')
+      .orderBy('"createdAt"', 'DESC')
+      .take(realLimit);
+
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', {
+        cursor: new Date(parseInt(cursor)),
+      });
+    }
+
+    return qb.getMany();
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
+  post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
     return Post.findOne(id);
   }
 
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
-  async createPost(@Arg("input") input: PostInput, @Ctx() { req }: MyContext): Promise<Post> {
+  async createPost(
+    @Arg('input') input: PostInput,
+    @Ctx() { req }: MyContext
+  ): Promise<Post> {
     return Post.create({
       ...input,
       creatorId: req.session.userId,
@@ -45,13 +65,13 @@ export class PostResolver {
 
   @Mutation(() => Post, { nullable: true })
   async updatePost(
-    @Arg("id") id: number,
-    @Arg("title", () => String, { nullable: true }) title: string
+    @Arg('id') id: number,
+    @Arg('title', () => String, { nullable: true }) title: string
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
     if (!post) return null;
 
-    if (typeof title !== "undefined") {
+    if (typeof title !== 'undefined') {
       await Post.update({ id }, { title });
     }
 
@@ -59,7 +79,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg("id") id: number): Promise<boolean> {
+  async deletePost(@Arg('id') id: number): Promise<boolean> {
     await Post.delete(id);
     return true;
   }
