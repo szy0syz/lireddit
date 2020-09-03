@@ -49,6 +49,7 @@ export type Post = {
   creatorId: Scalars['Float'];
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
+  textSnippet: Scalars['String'];
 };
 
 export type Mutation = {
@@ -238,7 +239,7 @@ export type PostsQuery = (
   { __typename?: 'Query' }
   & { posts: Array<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'title' | 'createdAt'>
+    & Pick<Post, 'id' | 'title' | 'textSnippet' | 'createdAt'>
   )> }
 );
 
@@ -349,6 +350,7 @@ export const PostsDocument = gql`
   posts(cursor: $cursor, limit: $limit) {
     id
     title
+    textSnippet
     createdAt
     createdAt
   }

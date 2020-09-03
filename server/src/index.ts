@@ -13,6 +13,7 @@ import session from "express-session";
 import connectRedis from "connect-redis";
 import cors from "cors";
 import { createConnection } from "typeorm";
+import path from 'path'
 
 const main = async () => {
   // eslint-disable-next-line
@@ -23,8 +24,10 @@ const main = async () => {
     password: 'pass123',
     logging: true,
     synchronize: true,
+    migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Post]
   });
+  await conn.runMigrations();
 
   // await Post.delete({});
 
