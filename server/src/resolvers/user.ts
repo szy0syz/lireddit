@@ -9,7 +9,6 @@ import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/snedEmail";
 import { v4 } from "uuid";
 import { getConnection } from "typeorm";
-import { userInfo } from "os";
 
 @ObjectType()
 class FieldError {

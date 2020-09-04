@@ -17,7 +17,6 @@ import { createConnection } from "typeorm";
 import path from 'path'
 
 const main = async () => {
-  // eslint-disable-next-line
   const conn = await createConnection({
     type: 'postgres',
     database: 'lireddit2',

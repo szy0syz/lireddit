@@ -23,7 +23,6 @@ export type Query = {
 
 export type QueryPostsArgs = {
   cursor?: Maybe<Scalars['String']>;
-  offset?: Maybe<Scalars['Int']>;
   limit: Scalars['Int'];
 };
 
@@ -67,6 +66,7 @@ export type Mutation = {
   register: UserResponse;
   login: UserResponse;
   logout: Scalars['Boolean'];
+  vote: Scalars['Boolean'];
   createPost: Post;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
@@ -92,6 +92,12 @@ export type MutationRegisterArgs = {
 export type MutationLoginArgs = {
   password: Scalars['String'];
   usernameOrEmail: Scalars['String'];
+};
+
+
+export type MutationVoteArgs = {
+  postId: Scalars['Int'];
+  value: Scalars['Int'];
 };
 
 
@@ -251,6 +257,10 @@ export type PostsQuery = (
     & { posts: Array<(
       { __typename?: 'Post' }
       & Pick<Post, 'id' | 'title' | 'textSnippet' | 'createdAt' | 'updatedAt'>
+      & { creator: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'username'>
+      ) }
     )> }
   ) }
 );
@@ -367,6 +377,10 @@ export const PostsDocument = gql`
       textSnippet
       createdAt
       updatedAt
+      creator {
+        id
+        username
+      }
     }
   }
 }

@@ -1,4 +1,3 @@
-import { Updoot } from "./../entities/Updoot";
 import { isAuth } from "./../middleware/isAuth";
 import { Post } from "./../entities/Post";
 import { getConnection, LessThan } from "typeorm";
@@ -63,7 +62,7 @@ export class PostResolver {
     START TRANSACTION;
 
     insert into updoot ("userId", "postId", value)
-    values (${userId},${postId},${value});
+    values (${userId}, ${postId}, ${value});
 
     update post
     set points = points + ${value}

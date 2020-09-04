@@ -1,22 +1,27 @@
-import { pipe, tap } from "wonka";
-import { betterUpdateQuery } from "./better";
-import { dedupExchange, Exchange, fetchExchange, stringifyVariables } from "urql";
-import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
+import { pipe, tap } from 'wonka';
+import { betterUpdateQuery } from './better';
+import {
+  dedupExchange,
+  Exchange,
+  fetchExchange,
+  stringifyVariables,
+} from 'urql';
+import { cacheExchange, Resolver } from '@urql/exchange-graphcache';
 import {
   MeQuery,
   MeDocument,
   LoginMutation,
   LogoutMutation,
   RegisterMutation,
-} from "../generated/graphql";
-import Router from "next/router";
+} from '../generated/graphql';
+import Router from 'next/router';
 
 const errorExchange: Exchange = ({ forward }) => (ops$) => {
   return pipe(
     forward(ops$),
     tap(({ error }) => {
-      if (error?.message.includes("not authenticated")) {
-        Router.replace("/login");
+      if (error?.message.includes('not authenticated')) {
+        Router.replace('/login');
       }
     })
   );
@@ -36,15 +41,15 @@ const cursorPagination = (): Resolver => {
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
     const isItInTheCache = cache.resolve(
       cache.resolveFieldByKey(entityKey, fieldKey) as string,
-      "posts"
+      'posts'
     );
     info.partial = !isItInTheCache;
     let hasMore = true;
     const results: string[] = [];
     fieldInfos.forEach((fi) => {
       const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
-      const data = cache.resolve(key, "posts") as string[];
-      const _hasMore = cache.resolve(key, "hasMore");
+      const data = cache.resolve(key, 'posts') as string[];
+      const _hasMore = cache.resolve(key, 'hasMore');
       if (!_hasMore) {
         hasMore = _hasMore as boolean;
       }
@@ -52,7 +57,7 @@ const cursorPagination = (): Resolver => {
     });
 
     return {
-      __typename: "PaginatedPosts",
+      __typename: 'PaginatedPosts',
       hasMore,
       posts: results,
     };
@@ -112,9 +117,9 @@ const cursorPagination = (): Resolver => {
 };
 
 export const createUrqlClient = (ssrExchange: any) => ({
-  url: "http://localhost:4000/graphql",
+  url: 'http://localhost:4000/graphql',
   fetchOptions: {
-    credentials: "include" as const,
+    credentials: 'include' as const,
   },
   exchanges: [
     dedupExchange,
@@ -129,6 +134,18 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          createPost: (_result, _, cache, __) => {
+            // 一直在操作缓存，全局缓存有多根线链接着各个 “page”
+            // console.log(cache.inspectFields("Query"));
+            const allFields = cache.inspectFields('Query');
+            const fieldInfos = allFields.filter(
+              (info) => info.fieldName === 'posts'
+            );
+            fieldInfos.forEach((fi) => {
+              // 替换缓存中的 key
+              cache.invalidate('Query', 'posts', fi.arguments || {});
+            });
+          },
           // logout: (_result, args, cache, info) => {
           logout: (_result, _, cache, __) => {
             betterUpdateQuery<LogoutMutation, MeQuery>(
