@@ -1,6 +1,7 @@
+import { Updoot } from "./../entities/Updoot";
 import { isAuth } from "./../middleware/isAuth";
 import { Post } from "./../entities/Post";
-import { getConnection } from "typeorm";
+import { getConnection, LessThan } from "typeorm";
 import {
   Resolver,
   Query,
@@ -42,28 +43,76 @@ export class PostResolver {
     return root.text.slice(0, 60);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("value", () => Int) _value: number,
+    @Arg("postId", () => Int) postId: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const userId = req.session.userId;
+    const isUpdoot = _value !== -1;
+    const value = isUpdoot ? 1 : -1;
+    // await Updoot.insert({
+    //   userId,
+    //   postId,
+    //   value,
+    // });
+    await getConnection().query(
+      `
+    START TRANSACTION;
+
+    insert into updoot ("userId", "postId", value)
+    values (${userId},${postId},${value});
+
+    update post
+    set points = points + ${value}
+    where id = ${postId};
+
+    COMMIT;
+    `
+    );
+
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
+    // @Arg("offset", () => Int, { nullable: true }) offset: number | null,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     // 判断 hasMore 的小技巧
-    // 20 -> 21
+    // TODO use [offset]
+    // const skip = typeof offset === "number" ? offset : 0;
     const realLimit = Math.min(50, limit);
     const reaLimitPlusOne = realLimit + 1;
-    const qb = getConnection()
+    let whereObj = {} as any;
+    if (cursor) whereObj.createdAt = LessThan(new Date(parseInt(cursor)));
+
+    const posts = await getConnection()
       .getRepository(Post)
-      .createQueryBuilder("p")
-      .orderBy('"createdAt"', "DESC")
-      .take(reaLimitPlusOne);
-
-    if (cursor) {
-      qb.where('"createdAt" < :cursor', {
-        cursor: new Date(parseInt(cursor)),
+      .find({
+        relations: ["creator"],
+        take: reaLimitPlusOne,
+        where: whereObj,
+        order: {
+          createdAt: "DESC",
+        },
       });
-    }
 
-    const posts = await qb.getMany();
+    //   .createQueryBuilder("p")
+    //   .innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
+    //   .orderBy('p."createdAt"', "DESC")
+    //   .take(reaLimitPlusOne);
+
+    // if (cursor) {
+    //   qb.where('p."createdAt" < :cursor', {
+    //     cursor: new Date(parseInt(cursor)),
+    //   });
+    // }
+
+    // const posts = await qb.getMany();
 
     return {
       posts: posts.slice(0, realLimit),

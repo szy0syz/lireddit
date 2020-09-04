@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+const Updoot_1 = require("./Updoot");
 const Post_1 = require("./Post");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
@@ -38,6 +39,10 @@ __decorate([
     typeorm_1.OneToMany(() => Post_1.Post, (post) => post.creator),
     __metadata("design:type", Array)
 ], User.prototype, "posts", void 0);
+__decorate([
+    typeorm_1.OneToMany(() => Updoot_1.Updoot, (updoot) => updoot.user),
+    __metadata("design:type", Array)
+], User.prototype, "updoots", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.CreateDateColumn(),

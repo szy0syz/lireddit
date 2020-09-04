@@ -1,3 +1,4 @@
+import { Updoot } from './entities/Updoot';
 import "reflect-metadata";
 import { Post } from './entities/Post';
 import { User } from './entities/User';
@@ -25,7 +26,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Post]
+    entities: [User, Post, Updoot]
   });
   await conn.runMigrations();
 

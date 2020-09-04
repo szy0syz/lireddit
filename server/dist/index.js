@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Updoot_1 = require("./entities/Updoot");
 require("reflect-metadata");
 const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
@@ -37,7 +38,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         logging: true,
         synchronize: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
-        entities: [User_1.User, Post_1.Post]
+        entities: [User_1.User, Post_1.Post, Updoot_1.Updoot]
     });
     yield conn.runMigrations();
     const app = express_1.default();
