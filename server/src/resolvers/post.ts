@@ -1,6 +1,6 @@
-import { isAuth } from './../middleware/isAuth';
-import { Post } from './../entities/Post';
-import { getConnection } from 'typeorm';
+import { isAuth } from "./../middleware/isAuth";
+import { Post } from "./../entities/Post";
+import { getConnection } from "typeorm";
 import {
   Resolver,
   Query,
@@ -13,8 +13,9 @@ import {
   UseMiddleware,
   FieldResolver,
   Root,
-} from 'type-graphql';
-import { MyContext } from 'src/types';
+  ObjectType,
+} from "type-graphql";
+import { MyContext } from "src/types";
 
 @InputType()
 class PostInput {
@@ -25,6 +26,15 @@ class PostInput {
   text: string;
 }
 
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+
+  @Field()
+  hasMore: boolean;
+}
+
 @Resolver(Post)
 export class PostResolver {
   @FieldResolver(() => String)
@@ -32,17 +42,20 @@ export class PostResolver {
     return root.text.slice(0, 60);
   }
 
-  @Query(() => [Post])
-  posts(
-    @Arg('limit', () => Int) limit: number,
-    @Arg('cursor', () => String, { nullable: true }) cursor: string | null
-  ): Promise<Post[]> {
-    const realLimit = Math.min(50, limit || 10);
+  @Query(() => PaginatedPosts)
+  async posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ): Promise<PaginatedPosts> {
+    // 判断 hasMore 的小技巧
+    // 20 -> 21
+    const realLimit = Math.min(50, limit);
+    const reaLimitPlusOne = realLimit + 1;
     const qb = getConnection()
       .getRepository(Post)
-      .createQueryBuilder('p')
-      .orderBy('"createdAt"', 'DESC')
-      .take(realLimit);
+      .createQueryBuilder("p")
+      .orderBy('"createdAt"', "DESC")
+      .take(reaLimitPlusOne);
 
     if (cursor) {
       qb.where('"createdAt" < :cursor', {
@@ -50,20 +63,22 @@ export class PostResolver {
       });
     }
 
-    return qb.getMany();
+    const posts = await qb.getMany();
+
+    return {
+      posts: posts.slice(0, realLimit),
+      hasMore: posts.length === reaLimitPlusOne,
+    };
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
+  post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
     return Post.findOne(id);
   }
 
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
-  async createPost(
-    @Arg('input') input: PostInput,
-    @Ctx() { req }: MyContext
-  ): Promise<Post> {
+  async createPost(@Arg("input") input: PostInput, @Ctx() { req }: MyContext): Promise<Post> {
     return Post.create({
       ...input,
       creatorId: req.session.userId,
@@ -72,13 +87,13 @@ export class PostResolver {
 
   @Mutation(() => Post, { nullable: true })
   async updatePost(
-    @Arg('id') id: number,
-    @Arg('title', () => String, { nullable: true }) title: string
+    @Arg("id") id: number,
+    @Arg("title", () => String, { nullable: true }) title: string
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
     if (!post) return null;
 
-    if (typeof title !== 'undefined') {
+    if (typeof title !== "undefined") {
       await Post.update({ id }, { title });
     }
 
@@ -86,7 +101,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg('id') id: number): Promise<boolean> {
+  async deletePost(@Arg("id") id: number): Promise<boolean> {
     await Post.delete(id);
     return true;
   }
