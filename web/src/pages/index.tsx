@@ -11,8 +11,6 @@ import {
   Text,
   Flex,
   Button,
-  Icon,
-  IconButton,
 } from '@chakra-ui/core';
 import { useState } from 'react';
 import UpdootSection from '../components/UpdootSection';
