@@ -2,14 +2,16 @@ import React from "react";
 import { Box, Link, Flex, Button } from "@chakra-ui/core";
 import NextLink from "next/link";
 import { useMeQuery, useLogoutMutation } from "../generated/graphql";
-import { isServer } from "../utils/isServer";
+// import { isServer } from "../utils/isServer";
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
+
+  //* 因为已在全局注入首次请求时客户端cookie，所以这次不必暂停，在服务端就可以处理
   const [{ data, fetching }] = useMeQuery({
-    pause: isServer(), // 组织服务端渲染阶段执行，因为服务端拿不到客户端 cookie，没必要执行两次
+    // pause: isServer(), // 组织服务端渲染阶段执行，因为服务端拿不到客户端 cookie，没必要执行两次
   }); // 待到客服端环境在运行即可
   let body = null;
 

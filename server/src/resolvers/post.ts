@@ -1,7 +1,7 @@
 import { Updoot } from './../entities/Updoot';
 import { isAuth } from './../middleware/isAuth';
 import { Post } from './../entities/Post';
-import { getConnection, LessThan } from 'typeorm';
+import { getConnection } from 'typeorm';
 import {
   Resolver,
   Query,
@@ -124,6 +124,7 @@ export class PostResolver {
     }
 
     let cursorIdx = 3; //* 注意：替换的是replacements的index值
+
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
       cursorIdx = replacements.length;
