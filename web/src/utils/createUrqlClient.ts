@@ -1,3 +1,5 @@
+import { VoteMutationVariables } from './../generated/graphql';
+
 import { pipe, tap } from 'wonka';
 import { betterUpdateQuery } from './better';
 import {
@@ -15,6 +17,7 @@ import {
   RegisterMutation,
 } from '../generated/graphql';
 import Router from 'next/router';
+import gql from 'graphql-tag';
 
 const errorExchange: Exchange = ({ forward }) => (ops$) => {
   return pipe(
@@ -134,6 +137,29 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          vote: (result, args, cache, info) => {
+            const { postId, value } = args as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                }
+              `,
+              { id: postId } as any
+            );
+            if (data) {
+              const newPoints = (data.points as number) + value * 2;
+              cache.writeFragment(
+                gql`
+                fragment __ on Post {
+                  points
+                }
+              `,
+              { id: postId, points: newPoints } as any
+              )
+            }
+          },
           createPost: (_result, _, cache, __) => {
             // 一直在操作缓存，全局缓存有多根线链接着各个 “page”
             // console.log(cache.inspectFields("Query"));

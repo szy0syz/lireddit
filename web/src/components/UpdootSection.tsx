@@ -12,7 +12,7 @@ const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
   const [loadingState, setLoadingState] = useState<
     'updoot-loading' | 'downdoot-loading' | 'not-loading'
   >('not-loading');
-  console.log("loadingState:", loadingState);
+
   return (
     <Flex direction="column" mr={4} alignItems="center">
       <IconButton

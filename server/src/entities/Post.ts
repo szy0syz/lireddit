@@ -32,6 +32,10 @@ export class Post extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   points!: number;
 
+  //* 后端数据库不用，只在前端内存缓存中使用，厉害!
+  @Field(() => Int, { nullable: true })
+  voteStatus: number | null; // 1 or -1 or null
+
   @Field()
   @Column()
   creatorId: number;
