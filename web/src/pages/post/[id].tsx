@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { usePostQuery } from '../../generated/graphql';
 import { Layout } from '../../components/Layout';
 import { Heading, Box } from '@chakra-ui/core';
-import { isServer } from '../../utils/isServer';
 
 const Post = ({}) => {
   const router = useRouter();
