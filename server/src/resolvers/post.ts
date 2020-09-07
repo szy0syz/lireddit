@@ -1,7 +1,7 @@
-import { Updoot } from './../entities/Updoot';
-import { isAuth } from './../middleware/isAuth';
-import { Post } from './../entities/Post';
-import { getConnection } from 'typeorm';
+import { Updoot } from "./../entities/Updoot";
+import { isAuth } from "./../middleware/isAuth";
+import { Post } from "./../entities/Post";
+import { getConnection } from "typeorm";
 import {
   Resolver,
   Query,
@@ -15,8 +15,8 @@ import {
   FieldResolver,
   Root,
   ObjectType,
-} from 'type-graphql';
-import { MyContext } from 'src/types';
+} from "type-graphql";
+import { MyContext } from "src/types";
 
 @InputType()
 class PostInput {
@@ -46,8 +46,8 @@ export class PostResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
-    @Arg('value', () => Int) _value: number,
-    @Arg('postId', () => Int) postId: number,
+    @Arg("value", () => Int) _value: number,
+    @Arg("postId", () => Int) postId: number,
     @Ctx() { req }: MyContext
   ) {
     const userId = req.session.userId;
@@ -106,9 +106,9 @@ export class PostResolver {
 
   @Query(() => PaginatedPosts)
   async posts(
-    @Arg('limit', () => Int) limit: number,
+    @Arg("limit", () => Int) limit: number,
     // @Arg("offset", () => Int, { nullable: true }) offset: number | null,
-    @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
     @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     // 判断 hasMore 的小技巧
@@ -147,7 +147,7 @@ export class PostResolver {
     }
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
+    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
     order by p."createdAt" DESC
     limit $1
     `,
@@ -177,16 +177,13 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
-    return Post.findOne(id, { relations: ['creator'] });
+  post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
+    return Post.findOne(id, { relations: ["creator"] });
   }
 
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
-  async createPost(
-    @Arg('input') input: PostInput,
-    @Ctx() { req }: MyContext
-  ): Promise<Post> {
+  async createPost(@Arg("input") input: PostInput, @Ctx() { req }: MyContext): Promise<Post> {
     return Post.create({
       ...input,
       creatorId: req.session.userId,
@@ -196,13 +193,13 @@ export class PostResolver {
   @Mutation(() => Post, { nullable: true })
   @UseMiddleware(isAuth)
   async updatePost(
-    @Arg('id') id: number,
-    @Arg('title', () => String, { nullable: true }) title: string
+    @Arg("id") id: number,
+    @Arg("title", () => String, { nullable: true }) title: string
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
     if (!post) return null;
 
-    if (typeof title !== 'undefined') {
+    if (typeof title !== "undefined") {
       await Post.update({ id }, { title });
     }
 
@@ -211,20 +208,26 @@ export class PostResolver {
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
-  async deletePost(
-    @Arg('id', () => Int) id: number,
-    @Ctx() { req }: MyContext
-  ): Promise<boolean> {
-    //! 这点逻辑也够绝的
+  async deletePost(@Arg("id", () => Int) id: number, @Ctx() { req }: MyContext): Promise<boolean> {
+    //* 这点逻辑也够绝的
+    //! ---- but not cascade way ----
+    // const post = await Post.findOne(id);
+    // if (!post) return false;
+    // if (post.creatorId !== req.session.userId) {
+    //   throw new Error('not authorized');
+    // }
+    // await Updoot.delete({ postId: id });
+    // await Post.delete({ id });
+
     const post = await Post.findOne(id);
     if (!post) return false;
-
     if (post.creatorId !== req.session.userId) {
       throw new Error('not authorized');
     }
 
-    await Updoot.delete({ postId: id });
-    await Post.delete({ id });
+    const creatorId = req.session.userId;
+    const response = await Post.delete({ id, creatorId });
+    console.log("~~~response:", response);
     return true;
   }
 }

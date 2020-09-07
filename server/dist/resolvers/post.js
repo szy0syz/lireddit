@@ -120,7 +120,7 @@ let PostResolver = class PostResolver {
                 : 'null as "voteStatus"'}
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
+    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
     order by p."createdAt" DESC
     limit $1
     `, replacements);
@@ -131,7 +131,7 @@ let PostResolver = class PostResolver {
         });
     }
     post(id) {
-        return Post_1.Post.findOne(id, { relations: ['creator'] });
+        return Post_1.Post.findOne(id, { relations: ["creator"] });
     }
     createPost(input, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -143,7 +143,7 @@ let PostResolver = class PostResolver {
             const post = yield Post_1.Post.findOne(id);
             if (!post)
                 return null;
-            if (typeof title !== 'undefined') {
+            if (typeof title !== "undefined") {
                 yield Post_1.Post.update({ id }, { title });
             }
             return post;
@@ -157,8 +157,9 @@ let PostResolver = class PostResolver {
             if (post.creatorId !== req.session.userId) {
                 throw new Error('not authorized');
             }
-            yield Updoot_1.Updoot.delete({ postId: id });
-            yield Post_1.Post.delete({ id });
+            const creatorId = req.session.userId;
+            const response = yield Post_1.Post.delete({ id, creatorId });
+            console.log("~~~response:", response);
             return true;
         });
     }
@@ -173,8 +174,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg('value', () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg('postId', () => type_graphql_1.Int)),
+    __param(0, type_graphql_1.Arg("value", () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg("postId", () => type_graphql_1.Int)),
     __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Number, Object]),
@@ -182,8 +183,8 @@ __decorate([
 ], PostResolver.prototype, "vote", null);
 __decorate([
     type_graphql_1.Query(() => PaginatedPosts),
-    __param(0, type_graphql_1.Arg('limit', () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg('cursor', () => String, { nullable: true })),
+    __param(0, type_graphql_1.Arg("limit", () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg("cursor", () => String, { nullable: true })),
     __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object, Object]),
@@ -191,7 +192,7 @@ __decorate([
 ], PostResolver.prototype, "posts", null);
 __decorate([
     type_graphql_1.Query(() => Post_1.Post, { nullable: true }),
-    __param(0, type_graphql_1.Arg('id', () => type_graphql_1.Int)),
+    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
@@ -199,8 +200,7 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg('input')),
-    __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg("input")), __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [PostInput, Object]),
     __metadata("design:returntype", Promise)
@@ -208,8 +208,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post, { nullable: true }),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg('id')),
-    __param(1, type_graphql_1.Arg('title', () => String, { nullable: true })),
+    __param(0, type_graphql_1.Arg("id")),
+    __param(1, type_graphql_1.Arg("title", () => String, { nullable: true })),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", Promise)
@@ -217,8 +217,7 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg('id', () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)), __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
