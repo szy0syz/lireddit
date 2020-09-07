@@ -33,6 +33,6 @@
   ],
   "include": [
     "./src/**/*.tsx",
-    "./src/**/*.ts"
+    "./src/**/*.ts", "src/migrations/1599147250487-FakePosts.ts"
   ]
 }
