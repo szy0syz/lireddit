@@ -83,3 +83,61 @@ let body = null;
 ```
 
 - 竟然可以重启 typescript 服务 --> `shift + cmd + p` --> `restart typescript`
+
+### DataLoader
+
+> 如此之美妙
+
+```ts
+@FieldResolver(() => User)
+creator(@Root() post: Post) {
+  return User.findOne(post.creatorId);
+}
+```
+
+```ts
+const posts = await getConnection().query(
+  `
+  select p.*,
+  json_build_object(
+    'id', u.id,
+    'username', u.username,
+    'email', u.email,
+    'createdAt', u."createdAt",
+    'updatedAt', u."updatedAt"
+    ) creator,
+  ${
+    req.session.userId
+      ? '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"'
+      : 'null as "voteStatus"'
+  }
+  from post p
+  inner join public.user u on u.id = p."creatorId"
+  ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
+  order by p."createdAt" DESC
+  limit $1
+`,
+  replacements
+);
+```
+
+```sql
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [2]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+```
+
+```sql
+query:
+      select p.*,
+      (select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"
+      from post p
+      order by p."createdAt" DESC
+      limit $1
+     -- PARAMETERS: [16,1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1, $2) -- PARAMETERS: [2,1]
+query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."username" AS "User_username", "User"."password" AS "User_password", "User"."createdAt" AS "User_createdAt", "User"."updatedAt" AS "User_updatedAt" FROM "user" "User" WHERE "User"."id" IN ($1) -- PARAMETERS: [1]
+```

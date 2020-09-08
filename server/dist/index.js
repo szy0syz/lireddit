@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const createUserLoader_1 = require("./utils/createUserLoader");
 const Updoot_1 = require("./entities/Updoot");
 require("reflect-metadata");
 const Post_1 = require("./entities/Post");
@@ -37,15 +38,15 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         password: 'pass123',
         logging: true,
         synchronize: true,
-        migrations: [path_1.default.join(__dirname, "./migrations/*")],
-        entities: [User_1.User, Post_1.Post, Updoot_1.Updoot]
+        migrations: [path_1.default.join(__dirname, './migrations/*')],
+        entities: [User_1.User, Post_1.Post, Updoot_1.Updoot],
     });
     yield conn.runMigrations();
     const app = express_1.default();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default();
     app.use(cors_1.default({
-        origin: "http://localhost:3000",
+        origin: 'http://localhost:3000',
         credentials: true,
     }));
     app.use(express_session_1.default({
@@ -57,11 +58,11 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: 'lax',
             secure: constants_1.__prod__,
         },
         saveUninitialized: false,
-        secret: "keyboard cat",
+        secret: 'keyboard cat',
         resave: false,
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
@@ -69,14 +70,19 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             resolvers: [hello_1.HelloResolver, post_1.PostResolver, user_1.UserResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ req, res, redis }),
+        context: ({ req, res }) => ({
+            req,
+            res,
+            redis,
+            userLoader: createUserLoader_1.createUserLoader(),
+        }),
     });
     apolloServer.applyMiddleware({
         app,
         cors: false,
     });
     app.listen(4000, () => {
-        console.log("server started on http://localhost:4000");
+        console.log('server started on http://localhost:4000');
     });
 });
 main().catch((err) => {
