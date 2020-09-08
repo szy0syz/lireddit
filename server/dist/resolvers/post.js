@@ -61,6 +61,19 @@ let PostResolver = class PostResolver {
     creator(post, { userLoader }) {
         return userLoader.load(post.creatorId);
     }
+    voteStatus(post, { req, updootLoader }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('~~~req.session', req.session);
+            if (!req.session.userId)
+                return null;
+            const updoot = yield updootLoader.load({
+                postId: post.id,
+                userId: req.session.userId,
+            });
+            console.log('~~~updoot', updoot);
+            return updoot ? updoot.value : null;
+        });
+    }
     vote(_value, postId, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const userId = req.session.userId;
@@ -102,21 +115,13 @@ let PostResolver = class PostResolver {
             const realLimit = Math.min(50, limit);
             const reaLimitPlusOne = realLimit + 1;
             const replacements = [reaLimitPlusOne];
-            if (req.session.userId) {
-                replacements.push(req.session.userId);
-            }
-            let cursorIdx = 3;
             if (cursor) {
                 replacements.push(new Date(parseInt(cursor)));
-                cursorIdx = replacements.length;
             }
             const posts = yield typeorm_1.getConnection().query(`
-      select p.*,
-      ${req.session.userId
-                ? '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"'
-                : 'null as "voteStatus"'}
+      select p.*
       from post p
-      ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
+      ${cursor ? `where p."createdAt" < $2` : ''}
       order by p."createdAt" DESC
       limit $1
     `, replacements);
@@ -141,7 +146,8 @@ let PostResolver = class PostResolver {
                 .update(Post_1.Post)
                 .set({ title, text })
                 .where('id = :id and "creatorId" = :creatorId', {
-                id, creatorId: req.session.userId
+                id,
+                creatorId: req.session.userId,
             })
                 .returning('*')
                 .execute();
@@ -158,7 +164,7 @@ let PostResolver = class PostResolver {
             }
             const creatorId = req.session.userId;
             const response = yield Post_1.Post.delete({ id, creatorId });
-            console.log("~~~response:", response);
+            console.log('~~~response:', response);
             return true;
         });
     }
@@ -178,10 +184,18 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PostResolver.prototype, "creator", null);
 __decorate([
+    type_graphql_1.FieldResolver(() => type_graphql_1.Int, { nullable: true }),
+    __param(0, type_graphql_1.Root()),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Post_1.Post, Object]),
+    __metadata("design:returntype", Promise)
+], PostResolver.prototype, "voteStatus", null);
+__decorate([
     type_graphql_1.Mutation(() => Boolean),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg("value", () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg("postId", () => type_graphql_1.Int)),
+    __param(0, type_graphql_1.Arg('value', () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg('postId', () => type_graphql_1.Int)),
     __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Number, Object]),
@@ -189,8 +203,8 @@ __decorate([
 ], PostResolver.prototype, "vote", null);
 __decorate([
     type_graphql_1.Query(() => PaginatedPosts),
-    __param(0, type_graphql_1.Arg("limit", () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg("cursor", () => String, { nullable: true })),
+    __param(0, type_graphql_1.Arg('limit', () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg('cursor', () => String, { nullable: true })),
     __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object, Object]),
@@ -198,7 +212,7 @@ __decorate([
 ], PostResolver.prototype, "posts", null);
 __decorate([
     type_graphql_1.Query(() => Post_1.Post, { nullable: true }),
-    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)),
+    __param(0, type_graphql_1.Arg('id', () => type_graphql_1.Int)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
@@ -206,7 +220,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg("input")), __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg('input')),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [PostInput, Object]),
     __metadata("design:returntype", Promise)
@@ -214,9 +229,9 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post, { nullable: true }),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg("title")),
-    __param(2, type_graphql_1.Arg("text")),
+    __param(0, type_graphql_1.Arg('id', () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg('title')),
+    __param(2, type_graphql_1.Arg('text')),
     __param(3, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, String, String, Object]),
@@ -225,7 +240,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)), __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg('id', () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)

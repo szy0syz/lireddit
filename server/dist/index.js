@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const createUpdootLoader_1 = require("./utils/createUpdootLoader");
 const createUserLoader_1 = require("./utils/createUserLoader");
 const Updoot_1 = require("./entities/Updoot");
 require("reflect-metadata");
@@ -75,6 +76,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             res,
             redis,
             userLoader: createUserLoader_1.createUserLoader(),
+            voteStatusLoader: createUpdootLoader_1.createUpdootLoader(),
         }),
     });
     apolloServer.applyMiddleware({

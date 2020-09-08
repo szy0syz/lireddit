@@ -1,3 +1,4 @@
+import { createUpdootLoader } from './utils/createUpdootLoader';
 import { createUserLoader } from './utils/createUserLoader';
 import { Updoot } from './entities/Updoot';
 import 'reflect-metadata';
@@ -72,6 +73,7 @@ const main = async () => {
       res,
       redis,
       userLoader: createUserLoader(),
+      voteStatusLoader: createUpdootLoader(),
     }),
   });
 
