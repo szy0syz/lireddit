@@ -144,8 +144,13 @@ query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."
 
 ## Depolying
 
-- ``
+- `dokku apps:create lireddit-api`
 - `sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git`
+- `dokku postgres:create lireddit`
+- `dokku postgres:link lireddit lireddit-api`
+- `DATABASE_URL:  postgres://postgres:6eef81e262c735bc6e3512b4b3c1578f@dokku-postgres-lireddit:5432/lireddit`
+- `dokku redis:create olive`
+- `REDIS_URL:  redis://olive:0662b72c64c205f75fed918376603a8b8f3420aea887ef27d78a7b50bd8017ed@dokku-redis-olive:6379`
 - `yarn add dotenv-safe`
 - `npx gen-env-types .env -o src/env.d.ts -e .`
 - `npx typeorm migration:generate -n Initial`
