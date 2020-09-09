@@ -1,8 +1,8 @@
-import { User } from './../entities/User';
-import { Updoot } from './../entities/Updoot';
-import { isAuth } from './../middleware/isAuth';
-import { Post } from './../entities/Post';
-import { getConnection } from 'typeorm';
+import { User } from "./../entities/User";
+import { Updoot } from "./../entities/Updoot";
+import { isAuth } from "./../middleware/isAuth";
+import { Post } from "./../entities/Post";
+import { getConnection } from "typeorm";
 import {
   Resolver,
   Query,
@@ -16,8 +16,8 @@ import {
   FieldResolver,
   Root,
   ObjectType,
-} from 'type-graphql';
-import { MyContext } from 'src/types';
+} from "type-graphql";
+import { MyContext } from "src/types";
 
 @InputType()
 class PostInput {
@@ -50,26 +50,26 @@ export class PostResolver {
   }
 
   @FieldResolver(() => Int, { nullable: true })
-  async voteStatus(
-    @Root() post: Post,
-    @Ctx() { req, updootLoader }: MyContext
-  ) {
-    console.log('~~~req.session', req.session);
+  async voteStatus(@Root() post: Post, @Ctx() { req, updootLoader }: MyContext) {
     if (!req.session.userId) return null;
+    try {
+      const updoot = await updootLoader.load({
+        postId: post.id,
+        userId: req.session.userId,
+      });
 
-    const updoot = await updootLoader.load({
-      postId: post.id,
-      userId: req.session.userId,
-    });
-    console.log('~~~updoot', updoot);
-    return updoot ? updoot.value : null;
+      return updoot ? updoot.value : null;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
-    @Arg('value', () => Int) _value: number,
-    @Arg('postId', () => Int) postId: number,
+    @Arg("value", () => Int) _value: number,
+    @Arg("postId", () => Int) postId: number,
     @Ctx() { req }: MyContext
   ) {
     const userId = req.session.userId;
@@ -128,10 +128,10 @@ export class PostResolver {
 
   @Query(() => PaginatedPosts)
   async posts(
-    @Arg('limit', () => Int) limit: number,
+    @Arg("limit", () => Int) limit: number,
     // @Arg("offset", () => Int, { nullable: true }) offset: number | null,
-    @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    // @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     // 判断 hasMore 的小技巧
     // TODO use [offset]
@@ -149,7 +149,7 @@ export class PostResolver {
       `
       select p.*
       from post p
-      ${cursor ? `where p."createdAt" < $2` : ''}
+      ${cursor ? `where p."createdAt" < $2` : ""}
       order by p."createdAt" DESC
       limit $1
     `,
@@ -179,16 +179,13 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
+  post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
     return Post.findOne(id);
   }
 
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
-  async createPost(
-    @Arg('input') input: PostInput,
-    @Ctx() { req }: MyContext
-  ): Promise<Post> {
+  async createPost(@Arg("input") input: PostInput, @Ctx() { req }: MyContext): Promise<Post> {
     return Post.create({
       ...input,
       creatorId: req.session.userId,
@@ -198,9 +195,9 @@ export class PostResolver {
   @Mutation(() => Post, { nullable: true })
   @UseMiddleware(isAuth)
   async updatePost(
-    @Arg('id', () => Int) id: number,
-    @Arg('title') title: string,
-    @Arg('text') text: string,
+    @Arg("id", () => Int) id: number,
+    @Arg("title") title: string,
+    @Arg("text") text: string,
     @Ctx() { req }: MyContext
   ): Promise<Post | null> {
     const result = await getConnection()
@@ -211,7 +208,7 @@ export class PostResolver {
         id,
         creatorId: req.session.userId,
       })
-      .returning('*')
+      .returning("*")
       .execute();
 
     return result.raw[0];
@@ -219,10 +216,7 @@ export class PostResolver {
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
-  async deletePost(
-    @Arg('id', () => Int) id: number,
-    @Ctx() { req }: MyContext
-  ): Promise<boolean> {
+  async deletePost(@Arg("id", () => Int) id: number, @Ctx() { req }: MyContext): Promise<boolean> {
     //* 这点逻辑也够绝的
     //! ---- but not cascade way ----
     // const post = await Post.findOne(id);
@@ -236,12 +230,12 @@ export class PostResolver {
     const post = await Post.findOne(id);
     if (!post) return false;
     if (post.creatorId !== req.session.userId) {
-      throw new Error('not authorized');
+      throw new Error("not authorized");
     }
 
     const creatorId = req.session.userId;
     const response = await Post.delete({ id, creatorId });
-    console.log('~~~response:', response);
+    console.log("~~~response:", response);
     return true;
   }
 }

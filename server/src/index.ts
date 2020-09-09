@@ -73,7 +73,7 @@ const main = async () => {
       res,
       redis,
       userLoader: createUserLoader(),
-      voteStatusLoader: createUpdootLoader(),
+      updootLoader: createUpdootLoader(),
     }),
   });
 

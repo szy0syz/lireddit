@@ -76,7 +76,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             res,
             redis,
             userLoader: createUserLoader_1.createUserLoader(),
-            voteStatusLoader: createUpdootLoader_1.createUpdootLoader(),
+            updootLoader: createUpdootLoader_1.createUpdootLoader(),
         }),
     });
     apolloServer.applyMiddleware({
