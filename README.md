@@ -151,8 +151,20 @@ query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."
 - `DATABASE_URL:  postgres://postgres:6eef81e262c735bc6e3512b4b3c1578f@dokku-postgres-lireddit:5432/lireddit`
 - `dokku redis:create olive`
 - `REDIS_URL:  redis://olive:0662b72c64c205f75fed918376603a8b8f3420aea887ef27d78a7b50bd8017ed@dokku-redis-olive:6379`
+- `docker pull szy0syz/lireddit:0.1`
+- `docker tag szy0syz/lireddit:0.1 dokku/lireddit-api:laest`
 - `yarn add dotenv-safe`
 - `npx gen-env-types .env -o src/env.d.ts -e .`
 - `npx typeorm migration:generate -n Initial`
 - `docker build -t szy0syz/lireddit:test .`
 - `docker build -t szy0syz/lireddit:0.1 .`
+- `dokku proxy:ports lireddit-api`
+
+```bash
+root@nykj-2c8g5m:~# dokku domains:report
+=====> lireddit-api domains information
+       Domains app enabled:           true
+       Domains app vhosts:            lireddit-api.nykj-2c8g5m
+       Domains global enabled:        true
+       Domains global vhosts:         jerryshi.com
+```
