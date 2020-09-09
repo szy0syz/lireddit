@@ -146,3 +146,8 @@ query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."
 
 - ``
 - `sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git`
+- `yarn add dotenv-safe`
+- `npx gen-env-types .env -o src/env.d.ts -e .`
+- `npx typeorm migration:generate -n Initial`
+- `docker build -t szy0syz/lireddit:test .`
+- `docker build -t szy0syz/lireddit:0.1 .`
