@@ -1,5 +1,4 @@
 import { useGetIntId } from './useGetIntId';
-import { useRouter } from 'next/router';
 import { usePostQuery } from '../generated/graphql';
 
 export const useGetPostFromUrl = () => {
