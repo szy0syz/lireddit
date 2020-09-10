@@ -171,7 +171,7 @@ root@nykj-2c8g5m:~# dokku domains:report
 
 ```bash
 # 1. 创建 dokku app
-dokku apps:create test-app
+dokku apps:create lireddit-serv
 
 # 2. 下载 docker iamge
 docker pull szy0syz/some-image:v1.0
@@ -181,4 +181,22 @@ docker tag szy0syz/some-image:v1.0 dokku/test-app:v1.0
 
 # 4. deploy tag
 dokku tags:deploy test-app v1.0
+```
+
+```bash
+# ~~~ new deploy ~~~
+dokku apps:create lireddit-api
+dokku postgres:create lireddit-db
+
+dokku postgres:link lireddit-db lireddit-api
+dokku redis:create lireddit-redis
+dokku redis:link lireddit-redis lireddit-api
+
+dokku domains:add lireddit-api
+dokku domains:add-global lireddit-api
+# domains:remove ...
+
+dokku proxy:ports-add lireddit-api http:80:8080
+
+dokku certs:add lireddit-apiapi < jerryshi-cert-key.tar
 ```

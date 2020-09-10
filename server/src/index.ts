@@ -70,6 +70,10 @@ const main = async () => {
     })
   );
 
+  app.get("/", (_, res) => {
+    res.send("jerry shi");
+  });
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostResolver, UserResolver],
