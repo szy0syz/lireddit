@@ -44,7 +44,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = express_1.default();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
-    app.set("proxy", 1);
+    app.set("trust proxy", 1);
     app.use(cors_1.default({
         origin: process.env.CORS_ORIGIN,
         credentials: true,
@@ -60,14 +60,14 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             httpOnly: true,
             sameSite: "lax",
             secure: constants_1.__prod__,
-            domain: constants_1.__prod__ ? ".jerryshi.com" : undefined,
+            domain: constants_1.__prod__ ? ".yna.app" : undefined,
         },
         saveUninitialized: false,
         secret: process.env.SESSION_SECRET,
         resave: false,
     }));
     app.get("/", (_, res) => {
-        res.send("jerry shi");
+        res.send("working");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({

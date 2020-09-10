@@ -200,3 +200,52 @@ dokku proxy:ports-add lireddit-api http:80:8080
 
 dokku certs:add lireddit-apiapi < jerryshi-cert-key.tar
 ```
+
+```bash
+# -----
+FROM node:12-alpine as build
+
+COPY . .
+
+ENV NPM_CONFIG_LOGLEVEL warn
+RUN npm install --production
+
+RUN npm run build
+
+FROM node:12-alpine
+
+COPY --from=build package.json package.json
+COPY --from=build package-lock.json package-lock.json
+COPY --from=build .next .next
+COPY --from=build public public
+
+ENV NPM_CONFIG_LOGLEVEL warn
+RUN npm install --production
+
+EXPOSE 3000
+
+CMD npm start
+```
+
+```bash
+FROM node:12-alpine as build
+
+COPY . /src
+WORKDIR /src
+
+RUN npm ci
+RUN npm run build
+RUN npm prune --production
+
+FROM node:12-alpine
+
+WORKDIR /usr/app
+
+COPY --from=build /src/node_modules /usr/app/node_modules
+COPY --from=build /src/package.json /usr/app/package.json
+COPY --from=build /src/.next /usr/app/.next
+
+ENV NODE_ENV production
+
+CMD ["npm", "start"]
+```
