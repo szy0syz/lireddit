@@ -1,18 +1,38 @@
-FROM node:14
+# Test
+FROM node:14-alpine as test-target
+ENV NODE_ENV=development
+ENV PATH $PATH:/usr/src/app/node_modules/.bin
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-COPY yarn.lock ./
 
-RUN yarn
+# CI and release builds should use npm ci to fully respect the lockfile.
+# Local development may use npm install for opportunistic package updates.
+ARG npm_install_command=ci
+RUN npm $npm_install_command --registry=https://registry.npm.taobao.org
 
 COPY . .
 
-RUN yarn build
+# Build
+FROM test-target as build-target
+ENV NODE_ENV=production
 
-ENV NODE_ENV production
+# Use build tools, installed as development packages, to produce a release build.
+RUN npm run build
 
-EXPOSE 3000
-CMD [ "yarn", "start" ]
-USER node
+# Reduce installed packages to production-only.
+RUN npm prune --production --registry=https://registry.npm.taobao.org
+
+# Archive
+FROM node:14-alpine as archive-target
+ENV NODE_ENV=production
+ENV PATH $PATH:/usr/src/app/node_modules/.bin
+
+WORKDIR /usr/src/app
+
+# Include only the release build and production packages.
+COPY --from=build-target /usr/src/app/node_modules node_modules
+COPY --from=build-target /usr/src/app/.next .next
+
+CMD ["next", "start"]

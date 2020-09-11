@@ -152,7 +152,7 @@ query: SELECT "User"."id" AS "User_id", "User"."email" AS "User_email", "User"."
 - `dokku redis:create olive`
 - `REDIS_URL:  redis://olive:0662b72c64c205f75fed918376603a8b8f3420aea887ef27d78a7b50bd8017ed@dokku-redis-olive:6379`
 - `docker pull szy0syz/lireddit:0.1`
-- `docker tag szy0syz/lireddit:0.1 dokku/lireddit-api:0.1`
+- `docker tag szy0syz/lireddit:0.3 dokku/lireddit-api:latest`
 - `yarn add dotenv-safe`
 - `npx gen-env-types .env -o src/env.d.ts -e .`
 - `npx typeorm migration:generate -n Initial`
@@ -198,7 +198,9 @@ dokku domains:add-global lireddit-api
 
 dokku proxy:ports-add lireddit-api http:80:8080
 
-dokku certs:add lireddit-apiapi < jerryshi-cert-key.tar
+docker tag szy0syz/lireddit:0.3 dokku/lireddit-api:latest
+
+dokku certs:add lireddit-api < jerryshi-cert-key.tar
 ```
 
 ```bash
@@ -228,7 +230,7 @@ CMD npm start
 ```
 
 ```bash
-FROM node:12-alpine as build
+FROM node:14-alpine as build
 
 COPY . /src
 WORKDIR /src
@@ -237,7 +239,7 @@ RUN npm ci
 RUN npm run build
 RUN npm prune --production
 
-FROM node:12-alpine
+FROM node:14-alpine
 
 WORKDIR /usr/app
 
