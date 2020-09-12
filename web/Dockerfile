@@ -35,8 +35,9 @@ WORKDIR /usr/src/app
 COPY --from=build-target /usr/src/app/node_modules node_modules
 COPY --from=build-target /usr/src/app/.next .next
 
-ENV PORT 3000
+RUN npx next telemetry disable
 
+ENV PORT 3000
 EXPOSE 3000
 
 CMD ["next", "start"]

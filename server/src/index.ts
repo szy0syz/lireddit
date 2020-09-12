@@ -71,7 +71,7 @@ const main = async () => {
   );
 
   app.get("/", (_, res) => {
-    res.send("working");
+    res.send("released - 20200912 13:05");
   });
 
   const apolloServer = new ApolloServer({

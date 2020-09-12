@@ -251,3 +251,7 @@ ENV NODE_ENV production
 
 CMD ["npm", "start"]
 ```
+
+```bash
+docker run -d -p 443:5000 --restart=always --name registry2   -v /home/jerryshi/docker-images:/var/lib/registry   -v `pwd`/home/jerryshi/certs:/certs   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/inner.yncce.cn.crt   -e REGISTRY_HTTP_TLS_KEY=/certs/inner.yncce.cn.key   -v `pwd`/home/jerryshi/auth:/auth   -e "REGISTRY_AUTH=htpasswd"   -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm"   -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd   registry:2
+```

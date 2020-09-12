@@ -1,12 +1,12 @@
-import { Box, Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/core";
-import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
-import { useState } from "react";
-import EditDeletePostButtons from "../components/EditDeletePostButtons";
-import { Layout } from "../components/Layout";
-import UpdootSection from "../components/UpdootSection";
-import { usePostsQuery } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/core';
+import { withUrqlClient } from 'next-urql';
+import NextLink from 'next/link';
+import { useState } from 'react';
+import EditDeletePostButtons from '../components/EditDeletePostButtons';
+import { Layout } from '../components/Layout';
+import UpdootSection from '../components/UpdootSection';
+import { usePostsQuery } from '../generated/graphql';
+import { createUrqlClient } from '../utils/createUrqlClient';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -14,10 +14,13 @@ const Index = () => {
     cursor: null as null | string,
   });
 
-
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, error, fetching }] = usePostsQuery({
     variables,
   });
+
+  if (error) {
+    return <div>{JSON.stringify(error)}</div>;
+  }
 
   if (!fetching && !data) {
     return <div>you got query failed for some reason</div>;

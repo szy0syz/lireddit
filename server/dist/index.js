@@ -67,7 +67,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         resave: false,
     }));
     app.get("/", (_, res) => {
-        res.send("working");
+        res.send("released - 20200912 13:05");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
