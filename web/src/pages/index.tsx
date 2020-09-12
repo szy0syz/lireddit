@@ -18,12 +18,12 @@ const Index = () => {
     variables,
   });
 
-  if (error) {
-    return <div>{JSON.stringify(error)}</div>;
-  }
-
   if (!fetching && !data) {
     return <div>you got query failed for some reason</div>;
+  }
+
+  if (!data && error) {
+    return <div>{JSON.stringify(error)}</div>;
   }
 
   return (
